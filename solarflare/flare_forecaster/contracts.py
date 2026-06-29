@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+@dataclass
 class Forecast:
     probability: float
     probability_lower: float

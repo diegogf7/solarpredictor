@@ -56,4 +56,32 @@ def bss(y_true, y_probability, climatology = None):
 
     return 1.0 - brier / brier_reference if brier_reference else 0.0
 
+def expected_calibration_error(y_true, y_probability, n_bins = 10):
+
+    #probability_true, probability_prediction = calibration_curve(y_true, y_probability, n_bins = n_bins, strategy = "uniform")
     
+    y_true = np.asarray(y_true, dtype = float)
+    y_probability = np.asarray(y_probability, dtype = float)
+
+    bin_edges = np.linspace(0.0, 1.0, n_bins + 1)
+    bin_ids = np.digitize(y_probability, bin_edges, right = True) - 1
+
+    #need to make sure we only get positive values for the ids
+
+    bin_ids = np.clip(bin_ids, 0, n_bins - 1)
+
+
+    bin_totals = np.bincount(bin_ids, minlength = n_bins) 
+
+    nonzero = bin_totals > 0
+
+    ece_value = np.sum(bin_totals[nonzero] / len(y_true) * np.abs(
+        np.array([y_true[bin_ids == i].mean() for i in np.where(nonzero)[0]]) - np.array([y_probability[bin_ids == i].mean() for i in np.where(nonzero)[0]])
+    ))
+
+    return ece_value 
+
+#TSS: True skill statistic - how well the model separates events from things thar are not event from -1 to 1, 0 is random (pretty normal)
+#just measuring our separation from when events truly happen to when they actually don't
+#HSS: Heidke skill score: measures our accuracy relative to just random chance
+#BSS: Brier skill score - how much better are we than just the climatology, negative means worse and whether it's worth it
