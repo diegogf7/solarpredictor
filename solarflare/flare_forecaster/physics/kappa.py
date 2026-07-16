@@ -46,8 +46,26 @@ def polarity_inversion_line(bz, fraction = 0.05, width = 2):
 
     return positive_growing & negative_growing
 
-def kappa_features(alpha, magnetic_grid, fraction = 0.05, width = 2):
-    bz = magnetic_grid[0][:, :, 2]
+def kappa_features(alpha, magnetic_grid, fraction = 0.05, width = 2, b_floor = 0.1):
+    surface_b = magnetic_grid[0]
+    bz = surface_b[:, :, 2]
+    b_magnetic = np.linalg.norm(surface_b, axis = -1)
+    
+    strong = b_magnetic > b_floor * b_magnetic.max()
+
+    polarity_inversion = polarity_inversion_line(bz, fraction, width) & strong
+
+    kappa_map = np.abs(alpha[0])
+
+    if polarity_inversion.sum() == 0:
+        return kappa_map, 0.0, polarity_inversion, strong
+    
+    weights = b_magnetic[polarity_inversion]
+    kappa_star = float(np.average(kappa_map[polarity_inversion], weights =weights))
+
+    return kappa_map, kappa_star, polarity_inversion, strong
+
+    """bz = magnetic_grid[0][:, :, 2]
 
     polarity_inversion = polarity_inversion_line(bz, fraction, width)
 
@@ -59,7 +77,7 @@ def kappa_features(alpha, magnetic_grid, fraction = 0.05, width = 2):
     weights = np.abs(bz)[polarity_inversion]
     kappa_star = float(np.average(kappa_map[polarity_inversion], weights = weights))
 
-    return kappa_map, kappa_star, polarity_inversion
+    return kappa_map, kappa_star, polarity_inversion"""
 
 
 
