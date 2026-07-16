@@ -26,5 +26,6 @@ dist-ssr
 __pycache__/
 *.pyc
 solarflare/venv/
+solarflare/flare_forecaster/cache/
 solarflare/solarflaredata/*.tar.gz
 solarflare/solarflaredata/Lat60_Lon60_Nans0_png_224/

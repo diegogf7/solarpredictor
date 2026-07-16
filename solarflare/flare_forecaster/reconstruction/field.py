@@ -5,7 +5,7 @@ def jacobian_function(B, x):
 
     J = []
 
-    for i in range(4):
+    for i in range(3): #needs to be 3 because we have 3 components
         grad = torch.autograd.grad(
             B[:, i].sum(), x,
             create_graph = True, retain_graph = True
@@ -27,7 +27,7 @@ def curl(B, x):
 
     ], dim = 1)
 
-def divergence(B, x):
+def divergence(B, x): 
     J = jacobian_function(B, x)
 
     return J[:, 0, 0] + J[:, 1, 1] + J[:, 2, 2]

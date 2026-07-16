@@ -2,7 +2,7 @@ import torch
 
 import torch.nn as nn
 import numpy as np
-from .field import curl, div
+from .field import curl, divergence
 
 class Primary(nn.Module):
 
@@ -17,3 +17,88 @@ class Primary(nn.Module):
         )
 
         self.omega = omega
+
+        self._init_weights()
+
+    def _init_weights(self):
+
+        n = self.layers[0].in_features
+
+        nn.init.uniform_(self.layers[0].weight, -1/n, 1/n)
+        for layer in self.layers[1:]:
+
+            bound = (6 / layer.in_features) ** 0.5/ self.omega
+
+            nn.init.uniform_(layer.weight, -bound, bound)
+        
+    def forward(self, x):
+
+        h = torch.sin(self.omega * self.layers[0](x))
+
+        for layer in self.layers[1: -1]:
+
+            h = torch.sin(self.omega * layer(h))
+        
+        return self.layers[-1](h)
+    
+
+def physics_loss(model, x_col):
+
+    x_col.requires_grad_(True)
+
+    B = model(x_col)
+
+    curlB = curl(B, x_col)
+    divB = divergence(B, x_col)
+
+    #doing the forces 
+
+    cross = torch.linalg.cross(curlB, B)
+    norm_B = torch.norm(B, dim = 1, keepdim = True).clamp(min = 1e-8)
+    loss_ff = torch.mean((cross/norm_B) ** 2)
+
+    loss_div = torch.mean(divB ** 2)
+
+    return loss_ff, loss_div
+    
+def boundary_loss(model, x_bc, B_bc):
+
+    return torch.mean((model(x_bc) - B_bc) ** 2)
+
+
+def train(B_boundary, n_steps = 6000, lr = 1e-4, w_ff = 1.0, w_div = 1.0, w_bc = 10.0, n_col = 2048, device = "cuda", model = None):
+    H, W, _ = B_boundary.shape
+    B_scale = float(np.abs(B_boundary).max())
+
+    B_boundary = B_boundary / B_scale
+
+    ys, xs = np.meshgrid(np.linspace(0, 1, H), np.linspace(0, 1, W), indexing = "ij")
+    x_bc = torch.tensor(
+        np.stack([xs.ravel(), ys.ravel(), np.zeros(H * W)], axis = 1), dtype = torch.float32
+    ).to(device)
+
+    B_bc = torch.tensor(B_boundary.reshape(-1, 3), dtype = torch.float32).to(device)
+
+    if model is None:
+
+        model = Primary().to(device)
+    
+    optimizer = torch.optim.AdamW(model.parameters(), lr = lr)
+
+    for step in range(n_steps):
+        optimizer.zero_grad()
+
+        x_col = torch.rand(n_col, 3, device = device)
+        loss_ff, loss_div = physics_loss(model, x_col)
+        index = torch.randint(0, x_bc.shape[0], (n_col,), device = device)
+        loss_bc = boundary_loss(model, x_bc[index], B_bc[index])
+
+        loss = w_ff * loss_ff + w_div * loss_div + w_bc * loss_bc
+
+        loss.backward()
+        optimizer.step()
+
+        if step % 1000 == 0:
+            print(f"step {step:5d} | ff = {loss_ff.item():.3e} div = {loss_div.item():.3e} bc = {loss_bc.item():.3e}")
+
+    return model, B_scale

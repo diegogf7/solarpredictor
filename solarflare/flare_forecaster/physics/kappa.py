@@ -1,0 +1,34 @@
+import torch
+import numpy as np
+from reconstruction.field import curl
+
+def alpha_map(model, nx = 48, ny = 48, nz = 24, device = "cpu"):
+
+    zs, ys, xs = torch.meshgrid(
+        torch.linspace(0, 1, nz),
+        torch.linspace(0, 1, ny),
+        torch.linspace(0, 1, nx),
+        indexing = "ij"
+
+    )
+
+    points = torch.stack([xs.reshape(-1), ys.reshape(-1), zs.reshape(-1)], dim = 1).to(device) #need to change the input shape for our model
+
+
+    points.requires_grad_(True)
+
+    magnetic_field = model(points)
+    magnetic_curl = curl(magnetic_field, points)
+
+    numerator = (magnetic_curl * magnetic_field).sum(dim = 1)
+    denominator = (magnetic_field * magnetic_field).sum(dim = 1).clamp(min = 1e-8)
+
+    #need to determine the alpha value for our curl
+    alpha = (numerator / denominator).reshape(nz, ny, nx)
+    alpha = alpha.detach().cpu().numpy()
+    #now for the magnetic grid
+    magnetic_grid = magnetic_field.reshape(nz, ny, nx, 3)
+    magnetic_grid = magnetic_grid.detach().cpu.numpy()
+
+    return alpha, magnetic_grid
+

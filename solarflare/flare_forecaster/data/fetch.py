@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import drms
 from sunpy.net import Fido, attrs as a
+import numpy as np
 
 FLARE_RANK = {"A": 1, "B": 2, "C": 3, "M": 4, "X": 5}
 
@@ -57,16 +58,52 @@ def label_records(sharp_records, flares, noaa_ar, horizon_hours=24, min_class="M
         labeled.append({
             "ar_id":     str(noaa_ar),
             "timestamp": rec["timestamp"],
-            "label":     int(any(t0 <= datetime.fromisoformat(f["peak_time"]) <= t1 for f in relevant)),
+            "label":     int(any(t0 < datetime.fromisoformat(f["peak_time"]) <= t1 for f in relevant)),
             "features":  rec["features"],
         })
     return labeled
 
 
+def fetch_sharp_cube(harpnum, tstart, tend, email, cadence="1h"):
+    from astropy.io import fits
+    c = drms.Client(email=email)
+    t0 = tstart[:10].replace("-", ".") + "_00:00:00_TAI"
+    t1 = tend[:10].replace("-", ".") + "_00:00:00_TAI"
+    keys, segments = c.query(
+        f"hmi.sharp_cea_720s[{harpnum}][{t0}-{t1}@{cadence}]",
+        key=["T_REC", "QUALITY"],
+        seg=["Br", "Bt", "Bp"],
+    )
+    timestamps, frames = [], []
+    for i, row in keys.iterrows():
+        if int(row["QUALITY"]) != 0:
+            continue
+        components = []
+        for seg_name in ("Br", "Bt", "Bp"):
+            url = "http://jsoc.stanford.edu" + segments[seg_name][i]
+            with fits.open(url) as hdul:
+                components.append(hdul[1].data.astype(np.float32))
+        timestamps.append(row["T_REC"][:19].replace(".", "-", 2).replace("_", "T"))
+        frames.append(np.stack(components))
+    return timestamps, frames
+
+
+def stack_frames(frames):
+    height = min(f.shape[1] for f in frames)
+    width = min(f.shape[2] for f in frames)
+    cropped = []
+    for f in frames:
+        top = (f.shape[1] - height) // 2
+        left = (f.shape[2] - width) // 2
+        cropped.append(f[:, top:top + height, left:left + width])
+    return np.stack(cropped)
+
+
+
 if __name__ == "__main__":
     import json
 
-    EMAIL, HARPNUM, NOAA_AR = "diego.gaf28@gmail.com", 4315, 12017
+    EMAIL, HARPNUM, NOAA_AR = "diego.gaf28@gmail.com", 3894, 12017
     TSTART, TEND = "2014-03-28", "2014-03-31"
 
     print("Fetching SHARP keywords...")
