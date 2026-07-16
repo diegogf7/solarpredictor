@@ -46,3 +46,21 @@ def polarity_inversion_line(bz, fraction = 0.05, width = 2):
 
     return positive_growing & negative_growing
 
+def kappa_features(alpha, magnetic_grid, fraction = 0.05, width = 2):
+    bz = magnetic_grid[0][:, :, 2]
+
+    polarity_inversion = polarity_inversion_line(bz, fraction, width)
+
+    kappa_map = np.abs(alpha[0])
+
+    if polarity_inversion.sum() == 0:
+        return kappa_map, 0.0, polarity_inversion
+    
+    weights = np.abs(bz)[polarity_inversion]
+    kappa_star = float(np.average(kappa_map[polarity_inversion], weights = weights))
+
+    return kappa_map, kappa_star, polarity_inversion
+
+
+
+
