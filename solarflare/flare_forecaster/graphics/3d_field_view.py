@@ -35,3 +35,23 @@ model, scale = train(boundary, n_steps = 1500, device = "cpu")
 n =32
 magnetic_field = sample_field(model, n = n)
 
+grid = pv.ImageData(dimensions = (n, n, n), spacing = (1 / (n-1),) * 3, origin = (0, 0, 0))
+grid["B"] = magnetic_field
+grid["Bz"] = magnetic_field[:, 2]
+
+streams = grid.streamlines(
+    vectors = "B",
+    source_center = (0.5, 0.5, 0.05),
+    source_radius = 0.45,
+    n_points = 250,
+    max_time = 6.0,
+    integration_direction = "both",
+
+)
+
+plot = pv.Plotter()
+plot.add_mesh(streams.tube(radius = 0.0025), scalars = "B", cmap = "plasma", show_scalar_bar = False)
+floor = grid.slice(normal = "z", origin = (0.5, 0.5, 0.001))
+plot.add_mesh(streams.tube(radius = 0.0025), scalars = "B", cmap = "plasma", show_scalar_bar = False)
+plot.add_axes()
+plot.show()
