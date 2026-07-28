@@ -52,3 +52,44 @@ class KappaCNNForecaster:
         out, _ = self.gru(feats.unsqueeze(0))
 
         return self.head(out).reshape(-1)
+    
+    def fit(self, records):
+        self.cnn = KappaCNN(self.feat_dimension).to(self.device)
+        self.gru = nn.GRU(self.feat_dimension, self.hidden, batch_first = True).to(self.device)
+        self.head = nn.Linear(self.hidden, 1).to(self.device)
+
+        parameters = list(self.cnn.parameters()) + list(self.gru.parameters()) + list(self.head.parameters())
+        optimizer = torch.optim.AdamW(parameters, lr = self.lr)
+        loss_function = nn.BCEWithLogitsLoss()
+
+        groups = list(self._group_by_ar(records).values())
+        for epoch in range(self.epochs):
+            total = 0.0
+
+            for recs in groups:
+                y = torch.tensor([float(record["label"]) for record in recs]).to(self.device)
+                optimizer.zero_grad()
+
+                logits = self._forward_ar(recs)
+                loss = loss_function(logits, y)
+                loss.backward()
+                optimizer.step()
+
+                total += loss.item()
+            if epoch % 25 == 0:
+                print(f"epoch {epoch: 3d} | loss {total / len(groups):.4f}")
+
+        return self
+
+    def predict_probability(self, records):
+        probability_by_id = {}
+
+        with torch.no_grad():
+
+            for recs in self._group_by_ar(records).values():
+
+                probability = torch.sigmoid(self._forward_ar(recs)).cpu().numpy()
+                for r, p in zip(recs, probability):
+                    probability_by_id[id(r)] = float(p)
+
+        return [probability_by_id[id(r)] for r in records]
