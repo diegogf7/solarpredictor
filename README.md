@@ -4,7 +4,9 @@ Most solar flare forecasters use traditional machine learning models such as XGB
 To give you an idea of what we're trying to generate here are some ideas below:
 
 <img width="251" height="277" alt="Screenshot 2026-08-20 at 12 56 19 PM" src="https://github.com/user-attachments/assets/f24dcc8c-72c1-4988-b001-a03c18501a51" />
+
 This is the twist, or the curl of the magnetic field on the sun from an image
 
 <img width="248" height="268" alt="Screenshot 2026-08-20 at 12 56 47 PM" src="https://github.com/user-attachments/assets/de1c2a86-74da-40b6-9751-cd1b0c1682de" />
+
 This is the magnetic field plotted by strength (more red) on the sun based on the curl image
