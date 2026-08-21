@@ -1,0 +1,57 @@
+{
+  "results": {
+    "physics pooled": {
+      "val_auc": 0.7443609022556391,
+      "test_auc": 0.7280701754385965,
+      "test_tss": 0.2243107769423559,
+      "threshold": 0.372,
+      "n_test": 59,
+      "n_test_flaring": 21
+    },
+    "flow rollout": {
+      "val_auc": 0.6917293233082706,
+      "test_auc": 0.8082706766917294,
+      "test_tss": 0.4298245614035088,
+      "threshold": 0.013,
+      "n_test": 59,
+      "n_test_flaring": 21
+    },
+    "SHARP-4 logistic": {
+      "val_auc": 0.8972431077694235,
+      "test_auc": 0.956140350877193,
+      "test_tss": 0.7305764411027569,
+      "threshold": 0.795,
+      "n_test": 59,
+      "n_test_flaring": 21
+    }
+  },
+  "comparisons": {
+    "physics pooled": {
+      "vs": "SHARP-4",
+      "delta_auc": -0.22740962481526733,
+      "ci_low": -0.3747271119684913,
+      "ci_high": -0.10634748102139403,
+      "p_better": 0.0,
+      "n_common": 59
+    },
+    "flow rollout": {
+      "vs": "SHARP-4",
+      "delta_auc": -0.14560977282277138,
+      "ci_low": -0.27318477880748376,
+      "ci_high": -0.03612470862470871,
+      "p_better": 0.0015,
+      "n_common": 59
+    }
+  },
+  "n": {
+    "train": 100,
+    "val": 59,
+    "test": 59
+  },
+  "n_flaring": {
+    "train": 27,
+    "val": 21,
+    "test": 21
+  },
+  "note": "physics branch only; Surya arm not yet encoded for train/test"
+}

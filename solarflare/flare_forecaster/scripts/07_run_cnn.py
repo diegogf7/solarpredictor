@@ -22,7 +22,7 @@ CACHE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 records = []
 for path in sorted(glob.glob(os.path.join(CACHE, "*npz"))):
-    d = np.load(path)
+    d = np.load(path, allow_pickle= True)
 
     maps = d["maps"]
     timestamps = [str(t) for t in d["timestamps"]]
@@ -34,9 +34,9 @@ for path in sorted(glob.glob(os.path.join(CACHE, "*npz"))):
 
     relevant = [
 
-        f for f in flares
+        f for f in flares # 
         if f["noaa_ar"] == noaa
-        and FLARE_RANK.get((f["goes_class"] or "")[-1].upper(), 0) >= 4
+        and FLARE_RANK.get((f["goes_class"] or "")[:1].upper(), 0) >= 4
     ]
 
     positives = 0
@@ -47,5 +47,29 @@ for path in sorted(glob.glob(os.path.join(CACHE, "*npz"))):
         label = int(any(start < datetime.fromisoformat(f["peak_time"][:19]) <= end for f in relevant))
         positives += label
         records.append({
-            
+            "ar_id": str(noaa),
+            "timestamp": ts[:19],
+            "map": maps[i].astype(np.float32),
+            "label": label,
         })
+    print(f"AR {noaa}: {len(timestamps)} maps, {positives} positives")
+
+
+print(f"\nTotal: {len(records)} maps")
+manifest = make_splits(records)
+
+train, validation, test = apply_splits(records, manifest)
+print(f"Train {len(train)}, validation {len(validation)}, test {len(test)}, test positives {sum(record['label'] for record in test)}")
+
+
+for name, model in [
+    ("Climatology", ClimateBaseline()),
+    ("Kappa-CNN", KappaCNNForecaster()),
+
+
+]:
+    print(f"\n==={name}===")
+    results = evaluate(model,train, validation, test)
+    for k,v in results.items():
+
+        print(f"{k}: {v:.5f}" if isinstance(v, float) else f"{k}: {v}")

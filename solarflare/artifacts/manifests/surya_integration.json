@@ -1,0 +1,38 @@
+{
+  "measured_utc": "2026-08-13T16:33:10.499279+00:00",
+  "git_commit": "unknown what's going on",
+  "checkpoint_name": "surya.366m.v1.pt",
+  "checkpoint_sha256": "7cac7599a371a3a1c61ba133aa192db987fa9efb0ab88a0ccc3119220c498bf1",
+  "config_sha256": "628c2189aa3e45081852a5265c575c9fbcadac1dbe37796cd7c5e72a882058b9",
+  "d_surya": 1280,
+  "n_tokens": 65536,
+  "token_grid": 256,
+  "patch_size": 16,
+  "img_size": 4096,
+  "n_params": 361926912,
+  "channel_order": [
+    "aia94",
+    "aia131",
+    "aia171",
+    "aia193",
+    "aia211",
+    "aia304",
+    "aia335",
+    "aia1600",
+    "hmi_m",
+    "hmi_bx",
+    "hmi_by",
+    "hmi_bz",
+    "hmi_v"
+  ],
+  "n_input_timestamps": 2,
+  "time_delta_input_minutes": [
+    -60,
+    0
+  ],
+  "input_tensor_order": "B,C,T,H,W",
+  "encoder_output": "backbone tokens (finetune=True, unembed skipped)",
+  "pool": "crop_mean",
+  "dtype": "bfloat16",
+  "torch_version": "2.9.1+rocm6.4"
+}

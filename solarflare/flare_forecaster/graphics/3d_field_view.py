@@ -44,14 +44,24 @@ streams = grid.streamlines(
     source_center = (0.5, 0.5, 0.05),
     source_radius = 0.45,
     n_points = 250,
-    max_time = 6.0,
+    max_length = 6.0,
     integration_direction = "both",
 
 )
 
 plot = pv.Plotter()
-plot.add_mesh(streams.tube(radius = 0.0025), scalars = "B", cmap = "plasma", show_scalar_bar = False)
-floor = grid.slice(normal = "z", origin = (0.5, 0.5, 0.001))
-plot.add_mesh(streams.tube(radius = 0.0025), scalars = "B", cmap = "plasma", show_scalar_bar = False)
-plot.add_axes()
+#want to do the field lines by the field strength
+
+plot.add_mesh(streams.tube(radius = 0.0025), scalars = "B", cmap = "plasma", scalar_bar_args = {"title": "field strength |B|"})
+
+floor = grid.slice(normal = "z", origin = (0.5, 0.5, 0.01))
+plot.add_mesh(floor, scalars = "Bz", cmap = "coolwarm", opacity = 1.0, scalar_bar_args = {"title": "surface Bz (red out / blue in)"})
+
+
+plot.show_bounds(xtitle = "west", ytitle = "north", ztitle = "height", grid = True, location = "outer", color = "gray")
+
+plot.add_text("AR 12017: field lines rooted in the solar surface", font_size = 10)
+plot.view_isometric()
 plot.show()
+
+

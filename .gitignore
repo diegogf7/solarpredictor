@@ -26,6 +26,23 @@ dist-ssr
 __pycache__/
 *.pyc
 solarflare/venv/
-solarflare/flare_forecaster/cache/
-solarflare/solarflaredata/*.tar.gz
-solarflare/solarflaredata/Lat60_Lon60_Nans0_png_224/
+solarflare/solarflaredata/
+
+# Separate JS project — kept locally, not part of the forecaster
+satellite-tracker/
+public/
+package-lock.json
+
+# Cache: keep the small JSON metadata (splits, catalogs, triage labels),
+# drop the large binary intermediates that are reproducible or live on $WORK.
+solarflare/flare_forecaster/cache/*
+!solarflare/flare_forecaster/cache/*.json
+
+# Artifacts: keep splits, manifests and result JSONs; drop the heavy tensors.
+solarflare/artifacts/readouts_*/
+solarflare/artifacts/caches/
+solarflare/artifacts/checkpoints/
+solarflare/artifacts_toy/
+solarflare/artifacts_pilot/
+*.pt
+*.npz

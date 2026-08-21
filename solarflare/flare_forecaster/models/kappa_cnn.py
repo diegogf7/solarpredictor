@@ -46,9 +46,10 @@ class KappaCNNForecaster:
         return by_ar
     
     def _forward_ar(self, records):
-        maps = np.stack([record["map"] for record in records]).astype(np.float32)
-        x = torch.tensor(maps).unsqueeze(1).to(self.device)
-        feats = self.cnn(x)
+        feats = torch.cat([
+            self.cnn(torch.tensor(np.asarray(record["map"], dtype = np.float32)[None, None]).to(self.device))
+            for record in records
+        ], dim = 0)
         out, _ = self.gru(feats.unsqueeze(0))
 
         return self.head(out).reshape(-1)

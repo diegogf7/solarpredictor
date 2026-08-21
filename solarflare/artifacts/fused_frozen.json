@@ -1,0 +1,90 @@
+{
+  "roles": "frozen",
+  "results": {
+    "physics only": {
+      "val_auc": 0.6679197994987469,
+      "test_auc": 0.6111111111111112,
+      "test_tss": 0.16666666666666663,
+      "threshold": 0.456
+    },
+    "Surya only": {
+      "val_auc": 0.6190476190476191,
+      "test_auc": 0.4791666666666667,
+      "test_tss": -0.18055555555555558,
+      "threshold": 0.994
+    },
+    "fused observed": {
+      "val_auc": 0.6127819548872181,
+      "test_auc": 0.5138888888888888,
+      "test_tss": 0.07638888888888884,
+      "threshold": 0.035
+    },
+    "fused flow rollout": {
+      "val_auc": 0.6340852130325815,
+      "test_auc": 0.5208333333333334,
+      "test_tss": -0.00694444444444442,
+      "threshold": 0.997
+    },
+    "SHARP-4 logistic": {
+      "val_auc": 0.8847117794486216,
+      "test_auc": 0.9652777777777778,
+      "test_tss": 0.7638888888888888,
+      "threshold": 0.869
+    }
+  },
+  "comparisons": {
+    "fused flow rollout vs SHARP-4 logistic": {
+      "delta_auc": -0.44277480892260623,
+      "ci_low": -0.6912216202270381,
+      "ci_high": -0.2120813397129189,
+      "p_better": 0.0005,
+      "n_common": 25
+    },
+    "fused flow rollout vs physics only": {
+      "delta_auc": -0.0937542058552977,
+      "ci_low": -0.4445,
+      "ci_high": 0.24604978354978346,
+      "p_better": 0.3045,
+      "n_common": 25
+    },
+    "fused observed vs SHARP-4 logistic": {
+      "delta_auc": -0.44980476830183624,
+      "ci_low": -0.701300955988456,
+      "ci_high": -0.21999999999999997,
+      "p_better": 0.0005,
+      "n_common": 25
+    },
+    "fused observed vs physics only": {
+      "delta_auc": -0.10078416523452766,
+      "ci_low": -0.4500347222222223,
+      "ci_high": 0.24312996031745987,
+      "p_better": 0.2895,
+      "n_common": 25
+    },
+    "Surya only vs SHARP-4 logistic": {
+      "delta_auc": -0.48541967402814873,
+      "ci_low": -0.7400661764705883,
+      "ci_high": -0.22997916666666687,
+      "p_better": 0.0,
+      "n_common": 25
+    },
+    "Surya only vs physics only": {
+      "delta_auc": -0.1363990709608402,
+      "ci_low": -0.5220588235294118,
+      "ci_high": 0.23334415584415574,
+      "p_better": 0.2375,
+      "n_common": 25
+    }
+  },
+  "n": {
+    "train": 36,
+    "val": 59,
+    "test": 25
+  },
+  "n_flaring": {
+    "train": 12,
+    "val": 21,
+    "test": 9
+  },
+  "note": "Surya campaign incomplete; restricted to encoded ARs"
+}
